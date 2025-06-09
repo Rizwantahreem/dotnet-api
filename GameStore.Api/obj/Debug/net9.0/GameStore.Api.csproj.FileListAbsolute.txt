@@ -21,3 +21,4 @@ D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\refint\GameStor
 D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStore.Api.pdb
 D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStore.Api.genruntimeconfig.cache
 D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\ref\GameStore.Api.dll
+D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStore.Api.sourcelink.json
