@@ -16,7 +16,11 @@ public static class gameEndpoints
     public static RouteGroupBuilder mapGameEndpoints(this WebApplication app)
     {
         // to avoid the prefix in repritition
-        RouteGroupBuilder group = app.MapGroup("games");
+        RouteGroupBuilder group = app.MapGroup("games")
+                                    .WithParameterValidation(); // this is supported by the minimalApis.Extension package 
+
+        // note - In minimal APIs we need the endpoint filter to enable the validation we added with annotations
+        
         
         // GET - /games
         group.MapGet("/", () => games);
@@ -45,6 +49,18 @@ public static class gameEndpoints
         // PATCH - games/:id
         group.MapPatch("/{id}", (int id, UpdateGameDto updatedGame) =>
         {
+            // Check: All fields are null or empty — reject!
+            bool allFieldsAreEmpty =
+                string.IsNullOrWhiteSpace(updatedGame.name) &&
+                string.IsNullOrWhiteSpace(updatedGame.genre) &&
+                updatedGame.price == null &&
+                updatedGame.releaseDate == null;
+
+            if (allFieldsAreEmpty)
+            {
+                return Results.BadRequest("At least one field must be provided for update.");
+            }
+
             var gameIndex = games.FindIndex(x => x.id == id);
             if (gameIndex > -1)
             {
