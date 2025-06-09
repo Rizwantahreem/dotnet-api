@@ -13,7 +13,7 @@ Content-Type: application/json
 {
     "name": "Minecraft",
     "genre": "Kinds & Family",
-    "price": 19.9,
+    "price": 10,
     "releaseDate": "2011-11-18"
 
 }
@@ -24,7 +24,7 @@ Content-Type: application/json
 
 {
     "name": "Street F mkigther II Turbo",
-    "genre": "Figther"
+    "genre": ""
 }
 
 ###

@@ -22,3 +22,9 @@ D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStore.Api.p
 D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStore.Api.genruntimeconfig.cache
 D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\ref\GameStore.Api.dll
 D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStore.Api.sourcelink.json
+D:\Web\.net project\.net learning\GameStore.Api\bin\Debug\net9.0\Microsoft.OpenApi.dll
+D:\Web\.net project\.net learning\GameStore.Api\bin\Debug\net9.0\MinimalApis.Extensions.dll
+D:\Web\.net project\.net learning\GameStore.Api\bin\Debug\net9.0\MiniValidation.dll
+D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStore.Api.csproj.AssemblyReference.cache
+D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStore.Api.MvcApplicationPartsAssemblyInfo.cs
+D:\Web\.net project\.net learning\GameStore.Api\obj\Debug\net9.0\GameStor.5118A84D.Up2Date
