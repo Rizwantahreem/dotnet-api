@@ -1,5 +1,8 @@
-using System;
+using GameStore.Api.Data;
 using GameStore.Api.Dtos;
+using GameStore.Api.Entities;
+using GameStore.Api.Mapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameStore.Api.Endpoints;
 
@@ -7,90 +10,110 @@ public static class gameEndpoints
 {
     const string GetRouteName = "GetGame";
 
-    private static readonly List<GameDto> games = [
-        new (1, "Street Figther II", "Fighting", 19.99M, new DateOnly(1992, 7, 15)),
-        new (2, "Finally Fantasy XIV", "Roleplaying", 59.9M, new DateOnly(2010, 9, 30)),
-        new (3, "FIFA 23", "Sports", 69.99M, new DateOnly(2022, 9, 27))
-    ];
-
+    // here this 'this' is for the complirer to recognized that it's an Extension Function
     public static RouteGroupBuilder mapGameEndpoints(this WebApplication app)
     {
         // to avoid the prefix in repritition
         RouteGroupBuilder group = app.MapGroup("games")
-                                    .WithParameterValidation(); // this is supported by the minimalApis.Extension package 
+                                    .WithParameterValidation(); // this is supported by the minimalApis.Extension package [endPoint filter]
 
         // note - In minimal APIs we need the endpoint filter to enable the validation we added with annotations
-        
-        
+
         // GET - /games
-        group.MapGet("/", () => games);
+        group.MapGet("/", (GameStoreContext dbContext) => 
+                        dbContext.Games
+                            .Include(game => game.Genre)
+                            .Select(game => game.ToDto())
+                            .AsNoTracking()
+        );
 
         // GET  - /games/:id
-        group.MapGet("/{id}", (int id) => games.Find(game => game.id == id))
-            .WithName(GetRouteName);
+        group.MapGet("/{id}", async (int id, GameStoreContext dbContext) =>
+        {
+            var game = await dbContext.Games
+                            .Include(game => game.Genre)
+                            .FirstOrDefaultAsync(game => game.Id == id);
+
+            if (game == null)
+            {
+                return Results.NotFound(new { error = "Invalid id " + id });
+            }
+
+            return Results.Json(game.ToDto());
+        })
+        .WithName(GetRouteName);
 
         // POST - /games
-        group.MapPost("", (createGameDto newGame) =>
+        group.MapPost("", (createGameDto newGame, GameStoreContext dbContext) =>
         {
-            GameDto game = new(
-                games.Count + 1,
-                newGame.name,
-                newGame.genre,
-                newGame.price,
-                newGame.releaseDate
-            );
+            // creating an entity object
+            Game game = newGame.ToEntity();
+            game.Genre = dbContext.Genre.Find(newGame.genreId);
 
-            games.Add(game);
+            dbContext.Games.Add(game);
+            dbContext.SaveChanges();
 
-            return Results.CreatedAtRoute(GetRouteName, new { Id = game.id }, game);
+            // Transfrorming into DTO as entity shouldn't be shown to the user
+            return Results.CreatedAtRoute(GetRouteName, new { game.Id }, game.ToDto());
         }
         );
 
         // PATCH - games/:id
-        group.MapPatch("/{id}", (int id, UpdateGameDto updatedGame) =>
+        group.MapPatch("/{id}", async (int id, UpdateGameDto updatedGame, GameStoreContext dbContext) =>
         {
             // Check: All fields are null or empty — reject!
             bool allFieldsAreEmpty =
                 string.IsNullOrWhiteSpace(updatedGame.name) &&
-                string.IsNullOrWhiteSpace(updatedGame.genre) &&
                 updatedGame.price == null &&
-                updatedGame.releaseDate == null;
+                updatedGame.releaseDate == null &&
+                updatedGame.genreId == null;
 
             if (allFieldsAreEmpty)
             {
                 return Results.BadRequest("At least one field must be provided for update.");
             }
 
-            var gameIndex = games.FindIndex(x => x.id == id);
-            if (gameIndex > -1)
-            {
-                games[gameIndex] = games[gameIndex] with
-                {
-                    id = games[gameIndex].id,
-                    name = updatedGame.name ?? games[gameIndex].name,
-                    genre = updatedGame.genre ?? games[gameIndex].genre,
-                    releaseDate = updatedGame.releaseDate ?? games[gameIndex].releaseDate,
-                    price = updatedGame.price ?? games[gameIndex].price,
-                };
+            var game = await dbContext.Games
+                            .Include(game => game.Genre)
+                            .FirstOrDefaultAsync(game => game.Id == id);
 
-                return Results.NoContent();
+            if (game is null)
+            {
+                return Results.NotFound(new { error = "Invalid ID " + id });
             }
 
-            return Results.NotFound(new { error = "Invalid input" });
+            updatedGame.ApplyUpdates(game);
+            game.Genre = dbContext.Genre.Find(updatedGame.genreId);
+            dbContext.SaveChanges();
+
+            return Results.NoContent();
         });
 
         // DELETE - games/:id
-        group.MapDelete("/{id}", (int id) =>
+        group.MapDelete("/{id}", (int id, GameStoreContext dbContext) =>
         {
-            int gameIndex = games.FindIndex(game => game.id == id);
-            if (gameIndex > -1)
+            // batch delete
+            // dbContext.Games
+            //         .Where(game => game.Id == id)
+            //         .ExecuteDelete();
+
+            var game = dbContext.Games.Find(id);
+            if (game is null)
             {
-                games.RemoveAt(gameIndex);
-                return Results.NoContent();
+                return Results.NotFound(new { error = "Invalid id " + id });
             }
-            return Results.NotFound(new { error = "Invalid id: " + id });
+            dbContext.Games.Remove(game);
+            dbContext.SaveChanges();
+            return Results.NoContent();
         });
 
         return group;
     }
 }
+
+
+
+// For update we could have done this 
+// dbContext.Entry(existingGame)
+// .CurrentValues
+// .SetValues(dto.toUpdateDto())

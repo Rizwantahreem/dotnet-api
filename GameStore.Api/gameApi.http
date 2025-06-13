@@ -4,28 +4,27 @@ GET http://localhost:5049
 GET http://localhost:5049/games
 
 ###
-GET http://localhost:5049/games/4
+GET http://localhost:5049/games/6
 
 ###
 POST http://localhost:5049/games
 Content-Type: application/json
 
 {
-    "name": "Minecraft",
-    "genre": "Kinds & Family",
-    "price": 10,
-    "releaseDate": "2011-11-18"
-
+    "name": "Street Figther II",
+    "genreId": 1,
+    "price": 11,
+    "releaseDate": "2008-11-18"
 }
 
 ###
-PATCH   http://localhost:5049/games/4
+PATCH   http://localhost:5049/games/6
 Content-Type: application/json
 
 {
-    "name": "Street F mkigther II Turbo",
-    "genre": ""
+    "name": "Street Figther II Turbo",
+    "genreId": 1
 }
 
 ###
-DELETE http://localhost:5049/games/5
+DELETE http://localhost:5049/games/3
